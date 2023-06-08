@@ -11,15 +11,19 @@ def min_redundancy_max_relevance(dataframe, feature_nums=30):
     '''
     params dataframe: dataframe of features
     '''
-    X = dataframe.iloc[:, 1:]
-    y = dataframe.iloc[:, 0]
+    # the columns of dataframe: names, labels, radiomics_features...
+
+    X = dataframe.iloc[:, 2:]
+    y = dataframe.iloc[:, 1]
     feature_index = mrmr_classif(X=X, y=y, K=feature_nums)
     feature_index.insert(0, 'label')
     return feature_index
 
 
 def lasso_selection(dataframe, lasso_alphas=[-4, 0, 50]):
-    X = dataframe.iloc[:, 1:]
+    # the columns of dataframe: names, labels, radiomics_features...
+    
+    X = dataframe.iloc[:, 2:]
     Y = dataframe['label']
 
     columns = X.columns
@@ -148,11 +152,12 @@ def feature_selection(dataframe, mrmr_feature_nums, lasso_alphas):
     return lasso_feature_index, lasso_feature_coef, lasso_bias
 
 
-def compute_rad_score(dataframe, coef, bias, save_path):
+def compute_rad_score(dataframe, features_index, coef, bias, save_path):
     '''
     计算lasso选出的特征乘以及对应的权重
     '''
-
+    names = dataframe['names']
+    dataframe = dataframe[features_index]
     colunms = ['rad_score']
     X = dataframe.iloc[:, 1:]
     X = StandardScaler().fit_transform(X)  # 将数值标准化
@@ -167,6 +172,7 @@ def compute_rad_score(dataframe, coef, bias, save_path):
     label = pd.DataFrame(label)
 
     rad_score.insert(0, 'label', label)
+    rad_score.insert(0, 'names', names)
 
     os.makedirs(osp.dirname(save_path), exist_ok=True)
 
@@ -175,15 +181,15 @@ def compute_rad_score(dataframe, coef, bias, save_path):
 
 
 if __name__ == '__main__':
-    radiomics_pc = '../radiomics_pc.csv'
-    radiomics_vc = '../radiomics_vc.csv'
-    radiomics_tc1 = '../radiomics_tc1.csv'
-    radiomics_tc2 = '../radiomics_tc2.csv'
+    radiomics_pc = 'radiomics/radiomics_pc.csv'
+    radiomics_vc = 'radiomics/radiomics_vc.csv'
+    radiomics_tc1 = 'radiomics/radiomics_tc1.csv'
+    radiomics_tc2 = 'radiomics/radiomics_tc2.csv'
 
-    pc_rad_score_save_path = '../pc_rad_score.csv'
-    vc_rad_score_save_path = '../vc_rad_score.csv'
-    tc1_rad_score_save_path = '../tc1_rad_score.csv'
-    tc2_rad_score_save_path = '../tc2_rad_score.csv'
+    pc_rad_score_save_path = 'radiomics/pc_rad_score.csv'
+    vc_rad_score_save_path = 'radiomics/vc_rad_score.csv'
+    tc1_rad_score_save_path = 'radiomics/tc1_rad_score.csv'
+    tc2_rad_score_save_path = 'radiomics/tc2_rad_score.csv'
 
     pc_df = pd.read_csv(radiomics_pc)
     vc_df = pd.read_csv(radiomics_vc)
@@ -194,7 +200,7 @@ if __name__ == '__main__':
     lasso_alphas = [-4, 0, 50]
 
     lasso_feature_index, lasso_feature_coef, lasso_bias = feature_selection(pc_df, mrmr_feature_nums, lasso_alphas)
-    compute_rad_score(pc_df[lasso_feature_index], lasso_feature_coef, lasso_bias, pc_rad_score_save_path)
-    compute_rad_score(vc_df[lasso_feature_index], lasso_feature_coef, lasso_bias, vc_rad_score_save_path)
-    compute_rad_score(tc1_df[lasso_feature_index], lasso_feature_coef, lasso_bias, tc1_rad_score_save_path)
-    compute_rad_score(tc2_df[lasso_feature_index], lasso_feature_coef, lasso_bias, tc2_rad_score_save_path)
+    compute_rad_score(pc_df, lasso_feature_index, lasso_feature_coef, lasso_bias, pc_rad_score_save_path)
+    compute_rad_score(vc_df, lasso_feature_index, lasso_feature_coef, lasso_bias, vc_rad_score_save_path)
+    compute_rad_score(tc1_df, lasso_feature_index, lasso_feature_coef, lasso_bias, tc1_rad_score_save_path)
+    compute_rad_score(tc2_df, lasso_feature_index, lasso_feature_coef, lasso_bias, tc2_rad_score_save_path)

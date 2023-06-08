@@ -24,7 +24,7 @@ def radiomics_feature_extractor(img_path, roi_path, yaml_path, save_path):
         feature_item = pd.DataFrame.from_dict([featureVector.values()])
         feature_item.columns = featureVector.keys()
         feature_df = pd.concat([feature_df, feature_item])
-        name = osp.basename(img)
+        name = osp.basename(img).split('.')[0]
         names.append(name)
         if 'po' in name:
             labels.append(1)
@@ -32,8 +32,8 @@ def radiomics_feature_extractor(img_path, roi_path, yaml_path, save_path):
             labels.append(0)
     
     feature_df = feature_df.iloc[:, 37:] # delete first 37 columns
-    feature_df['label'] = labels
-    feature_df['names'] = names
+    feature_df.insert(0, "label", labels)
+    feature_df.insert(0, "names", names)
 
     os.makedirs(osp.dirname(save_path), exist_ok=True)
 
@@ -41,17 +41,17 @@ def radiomics_feature_extractor(img_path, roi_path, yaml_path, save_path):
 
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='radiomics tools')
+    parser = argparse.ArgumentParser(description='radiomics tools')
 
-    # parser.add_argument('img_path', help='image floder path', type=str)
-    # parser.add_argument('roi_path', help='roi floder path', type=str)
-    # parser.add_argument('yaml_path', help='pyradiomics config file path', type=str)
-    # parser.add_argument('save_path', help='save csv path', type=str)
-    # args = parser.parse_args()
-    # radiomics_feature_extractor(args.img_path, args.roi_path, args.yaml_path, args.save_path)
+    parser.add_argument('img_path', help='image floder path', type=str)
+    parser.add_argument('roi_path', help='roi floder path', type=str)
+    parser.add_argument('yaml_path', help='pyradiomics config file path', type=str)
+    parser.add_argument('save_path', help='save csv path', type=str)
+    args = parser.parse_args()
+    radiomics_feature_extractor(args.img_path, args.roi_path, args.yaml_path, args.save_path)
 
-    radiomics_feature_extractor('../../data/nrrd/PC/bus', '../../data/nrrd/PC/roi', '../config.yaml', '../radiomics_pc.csv')
-    radiomics_feature_extractor('../../data/nrrd/VC/bus', '../../data/nrrd/VC/roi', '../config.yaml', '../radiomics_vc.csv')
-    radiomics_feature_extractor('../../data/nrrd/TC1/bus', '../../data/nrrd/TC1/roi', '../config.yaml', '../radiomics_tc1.csv')
-    radiomics_feature_extractor('../../data/nrrd/TC2/bus', '../../data/nrrd/TC2/roi', '../config.yaml', '../radiomics_tc2.csv')
+    # radiomics_feature_extractor('data/nrrd/PC/bus', 'data/nrrd/PC/roi', 'radiomics/config.yaml', 'radiomics/radiomics_pc.csv')
+    # radiomics_feature_extractor('data/nrrd/VC/bus', 'data/nrrd/VC/roi', 'radiomics/config.yaml', 'radiomics/radiomics_vc.csv')
+    # radiomics_feature_extractor('data/nrrd/TC1/bus', 'data/nrrd/TC1/roi', 'radiomics/config.yaml', 'radiomics/radiomics_tc1.csv')
+    # radiomics_feature_extractor('data/nrrd/TC2/bus', 'data/nrrd/TC2/roi', 'radiomics/config.yaml', 'radiomics/radiomics_tc2.csv')
     # example python radiomics\utils\extract_radiomics_feature.py MDLRN\data\nrrd\PC\bus MDLRN\data\nrrd\PC\roi MDLRN\radiomics\config.yaml radiomics_pc.csv
