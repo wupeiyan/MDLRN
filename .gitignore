@@ -1,4 +1,8 @@
 *.png
 *.nrrd
 *.csv
-*.ipynb
+__pycache__
+*.pyc
+*.pth
+*.log
+*.svg
